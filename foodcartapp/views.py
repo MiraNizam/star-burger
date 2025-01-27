@@ -65,7 +65,13 @@ def product_list_api(request):
 @api_view(['POST'])
 def register_order(request):
     order_form = request.data
-    print(order_form)
+    if 'products' not in order_form:
+        return Response({"error": "product key not presented"}, status=400)
+    if not isinstance(order_form['products'], list):
+        return Response({"error": "product key not presented or not list"}, status=400)
+    if len(order_form['products']) == 0:
+        return Response({"error": "products:  field cannot be empty."}, status=400)
+
     # serializer = ModelSerializer(data=order_form)
     # if serializer.is_valid():
     #     serializer.save()
