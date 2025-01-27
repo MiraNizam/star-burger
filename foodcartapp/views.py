@@ -7,6 +7,8 @@ from django.shortcuts import get_object_or_404
 
 from .models import Product, ClientOrder, OrderItem
 
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 def banners_list_api(request):
     # FIXME move data to db?
@@ -60,25 +62,36 @@ def product_list_api(request):
     })
 
 
+@api_view(['POST'])
 def register_order(request):
-    try:
-        order_form = json.loads(request.body.decode())
-    except ValueError:
-        return JsonResponse({
-            'error': 'Что-то пошло не так',
-        })
-    new_order = ClientOrder.objects.create(
-        firstname=order_form['firstname'],
-        lastname=order_form['lastname'],
-        phonenumber=order_form['phonenumber'],
-        address=order_form['address']
-    )
+    order_form = request.data
+    print(order_form)
+    # serializer = ModelSerializer(data=order_form)
+    # if serializer.is_valid():
+    #     serializer.save()
+    return Response(order_form, status=201)
+    # else:
+    #     return Response(serializer.errors, status=400)
+    # try:
+    #     order_form = json.loads(request.body.decode())
+    # except ValueError:
+    #     return JsonResponse({
+    #         'error': 'Что-то пошло не так',
+    #     })
+    # new_order = ClientOrder.objects.create(
+    #     firstname=order_form['firstname'],
+    #     lastname=order_form['lastname'],
+    #     phonenumber=order_form['phonenumber'],
+    #     address=order_form['address']
+    # )
+    #
+    # for product in order_form['products']:
+    #     OrderItem.objects.create(
+    #         order=new_order,
+    #         product=get_object_or_404(Product, id=product['product']),
+    #         quantity=product['quantity']
+    #     )
 
-    for product in order_form['products']:
-        OrderItem.objects.create(
-            order=new_order,
-            product=get_object_or_404(Product, id=product['product']),
-            quantity=product['quantity']
-        )
-    return JsonResponse(order_form)
+# {"products": [{"product": 2, "quantity": 1}, {"product": 3, "quantity": 1}], "firstname": "ELMIRA", "lastname": "NIZAMOVA", "phonenumber": "89657859158", "address": "Sankt-Peterburg"}
+
 
