@@ -6,9 +6,11 @@ from django.shortcuts import get_object_or_404
 
 
 from .models import Product, ClientOrder, OrderItem
+from .serializers import OrderSerializer
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+
 
 def banners_list_api(request):
     # FIXME move data to db?
@@ -64,40 +66,23 @@ def product_list_api(request):
 
 @api_view(['POST'])
 def register_order(request):
-    order_form = request.data
-    if 'products' not in order_form:
-        return Response({"error": "product key not presented"}, status=400)
-    if not isinstance(order_form['products'], list):
-        return Response({"error": "product key not presented or not list"}, status=400)
-    if len(order_form['products']) == 0:
-        return Response({"error": "products:  field cannot be empty."}, status=400)
+    serializer = OrderSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)  # выкинет ValidationError
 
-    # serializer = ModelSerializer(data=order_form)
-    # if serializer.is_valid():
-    #     serializer.save()
-    return Response(order_form, status=201)
-    # else:
-    #     return Response(serializer.errors, status=400)
-    # try:
-    #     order_form = json.loads(request.body.decode())
-    # except ValueError:
-    #     return JsonResponse({
-    #         'error': 'Что-то пошло не так',
-    #     })
-    # new_order = ClientOrder.objects.create(
-    #     firstname=order_form['firstname'],
-    #     lastname=order_form['lastname'],
-    #     phonenumber=order_form['phonenumber'],
-    #     address=order_form['address']
-    # )
-    #
-    # for product in order_form['products']:
-    #     OrderItem.objects.create(
-    #         order=new_order,
-    #         product=get_object_or_404(Product, id=product['product']),
-    #         quantity=product['quantity']
-    #     )
+    new_order = ClientOrder.objects.create(
+        firstname=serializer.validated_data['firstname'],
+        lastname=serializer.validated_data['lastname'],
+        phonenumber=serializer.validated_data['phonenumber'],
+        address=serializer.validated_data['address']
+    )
 
-# {"products": [{"product": 2, "quantity": 1}, {"product": 3, "quantity": 1}], "firstname": "ELMIRA", "lastname": "NIZAMOVA", "phonenumber": "89657859158", "address": "Sankt-Peterburg"}
+    for product in serializer.validated_data['products']:
+        OrderItem.objects.create(
+            order=new_order,
+            product=get_object_or_404(Product, id=product['product']),
+            quantity=product['quantity']
+        )
+
+    return Response({'order_id': new_order.id}, status=201)
 
 

@@ -148,6 +148,7 @@ class ClientOrder(models.Model):
     def __str__(self):
         return f'{self.firstname} {self.lastname} {self.address}'
 
+
 class OrderItem(models.Model):
     order = models.ForeignKey(
         'ClientOrder',
