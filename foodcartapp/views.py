@@ -79,10 +79,9 @@ def register_order(request):
     for product in serializer.validated_data['products']:
         OrderItem.objects.create(
             order=new_order,
-            product=get_object_or_404(Product, id=product['product']),
+            product=product['product'],
             quantity=product['quantity']
         )
 
-    return Response({'order_id': new_order.id}, status=201)
-
-
+    r_serializer = OrderSerializer(new_order)
+    return Response(r_serializer.data, status=200)
